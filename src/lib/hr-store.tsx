@@ -5,7 +5,7 @@ export type ContractStatus = "Tetap" | "Kontrak" | "Probation" | "Magang";
 
 export interface Employee {
   id: string; name: string; email: string; phone: string; position: string; division: string;
-  status: ContractStatus; joinDate: string; contractEnd?: string; baseSalary: number; allowance: number; leaveQuota: number;
+  status: ContractStatus; joinDate: string; contractEnd?: string | undefined; baseSalary: number; allowance: number; leaveQuota: number;
 }
 export interface Attendance { id: string; employeeId: string; date: string; checkIn: string; checkOut: string; status: "Hadir" | "Terlambat" | "Izin" | "Alpha"; overtimeHours: number }
 export interface Kpi { id: string; employeeId: string; month: string; score: number; target: string; note: string }
@@ -13,7 +13,7 @@ export interface Leave { id: string; employeeId: string; type: "Cuti Tahunan" | 
 export interface Job { id: string; title: string; division: string; open: boolean }
 export interface Applicant { id: string; jobId: string; name: string; email: string; stage: "Screening" | "Interview" | "Tes" | "Offering" | "Diterima" | "Ditolak" }
 export interface Payslip { id: string; employeeId: string; month: string; baseSalary: number; allowance: number; overtimePay: number; bpjs: number; latePenalty: number; otherDeduction: number; net: number; published: boolean }
-export interface AppUser { id: string; username: string; password: string; role: Role; employeeId?: string }
+export interface AppUser { id: string; username: string; password: string; role: Role; employeeId?: string | undefined }
 
 interface Data { employees: Employee[]; attendance: Attendance[]; kpis: Kpi[]; leaves: Leave[]; jobs: Job[]; applicants: Applicant[]; payslips: Payslip[]; users: AppUser[] }
 
