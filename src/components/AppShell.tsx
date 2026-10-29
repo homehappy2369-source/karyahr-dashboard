@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
-import { Wallet, Users, CalendarCheck, TrendingUp, Plane, Briefcase, FileBarChart, ShieldCheck, LogOut, Building2 } from "lucide-react";
+import { Wallet, Users, CalendarCheck, TrendingUp, Plane, Briefcase, FileBarChart, ShieldCheck, LogOut, Building2, LayoutDashboard, Settings } from "lucide-react";
 import { useHR, type Role } from "@/lib/hr-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 
 const NAV: { to: string; label: string; icon: typeof Wallet; roles: Role[] }[] = [
+  { to: "/dashboard", label: "Dashboard Utama", icon: LayoutDashboard, roles: ["admin", "hrd", "manajer", "karyawan"] },
   { to: "/", label: "Penggajian", icon: Wallet, roles: ["admin", "hrd", "manajer", "karyawan"] },
   { to: "/karyawan", label: "Data Karyawan", icon: Users, roles: ["admin", "hrd", "manajer"] },
   { to: "/absensi", label: "Absensi", icon: CalendarCheck, roles: ["admin", "hrd", "manajer", "karyawan"] },
@@ -16,6 +17,7 @@ const NAV: { to: string; label: string; icon: typeof Wallet; roles: Role[] }[] =
   { to: "/rekrutmen", label: "Rekrutmen", icon: Briefcase, roles: ["admin", "hrd"] },
   { to: "/laporan", label: "Laporan & Ekspor", icon: FileBarChart, roles: ["admin", "hrd", "manajer"] },
   { to: "/pengguna", label: "Hak Akses", icon: ShieldCheck, roles: ["admin"] },
+  { to: "/pengaturan", label: "Pengaturan", icon: Settings, roles: ["admin", "hrd", "manajer", "karyawan"] },
 ];
 
 function Login() {
@@ -81,7 +83,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {nav.map((n) => (
             <Link key={n.to} to={n.to} className={`whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium ${path === n.to ? "bg-primary text-primary-foreground" : "bg-muted"}`}>{n.label}</Link>
           ))}
-          <button onClick={logout} className="whitespace-nowrap rounded-md bg-muted px-3 py-1.5 text-xs">Keluar</button>
+          <Button variant="secondary" size="sm" onClick={logout}><LogOut className="h-4 w-4" />Keluar</Button>
         </header>
         <main className="flex-1 p-4 md:p-8">
           {allowed ? children : <Card className="p-8 text-center text-muted-foreground">Anda tidak memiliki akses ke halaman ini.</Card>}

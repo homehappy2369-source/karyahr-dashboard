@@ -1,0 +1,4 @@
+- [ ] Tambahkan Dashboard Utama tanpa memindahkan halaman penggajian.
+- [ ] Kosongkan contoh rekrutmen dan lengkapi tambah, ubah, hapus lowongan/pelamar.
+- [ ] Tambahkan pengaturan password akun demo dan uji login ulang.
+- [ ] Verifikasi hubungan laporan dan ekspor dengan data menu lainnya.
