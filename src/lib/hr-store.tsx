@@ -24,7 +24,7 @@ const thisMonth = new Date().toISOString().slice(0, 7);
 
 function seed(): Data {
   const e = (id: string, name: string, position: string, division: string, status: ContractStatus, baseSalary: number, allowance: number): Employee => ({
-    id, name, email: name.split(" ")[0].toLowerCase() + "@perusahaan.co.id", phone: "0812" + Math.floor(10000000 + Math.random() * 89999999),
+    id, name, email: name.split(" ")[0]!.toLowerCase() + "@perusahaan.co.id", phone: "0812" + Math.floor(10000000 + Math.random() * 89999999),
     position, division, status, joinDate: "2023-0" + (1 + (id.charCodeAt(1) % 9)) + "-01", contractEnd: status === "Tetap" ? undefined : "2027-06-30",
     baseSalary, allowance, leaveQuota: 12,
   });

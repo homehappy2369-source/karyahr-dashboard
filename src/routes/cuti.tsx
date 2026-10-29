@@ -35,10 +35,10 @@ function LeavePage() {
   const name = (id: string) => employees.find((e) => e.id === id)?.name ?? "-";
 
   const submit = () => {
-    if (!form.employeeId || !form.start || !form.end) return toast.error("Lengkapi data pengajuan");
+    if (!form.employeeId || !form.start || !form.end) { toast.error("Lengkapi data pengajuan"); return; }
     const emp = employees.find((e) => e.id === form.employeeId)!;
     const d = days(form.start, form.end);
-    if (form.type === "Cuti Tahunan" && d > emp.leaveQuota - used(emp.id)) return toast.error("Sisa jatah cuti tidak cukup");
+    if (form.type === "Cuti Tahunan" && d > emp.leaveQuota - used(emp.id)) { toast.error("Sisa jatah cuti tidak cukup"); return; }
     update("leaves", (p) => [{ id: newId(), ...form, days: d, status: "Menunggu" }, ...p]);
     setForm({ ...form, start: "", end: "", reason: "" });
     toast.success("Pengajuan dikirim");
