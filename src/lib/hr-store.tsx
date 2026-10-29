@@ -12,7 +12,7 @@ export interface Kpi { id: string; employeeId: string; month: string; score: num
 export interface Leave { id: string; employeeId: string; type: "Cuti Tahunan" | "Sakit" | "Izin"; start: string; end: string; days: number; reason: string; status: "Menunggu" | "Disetujui" | "Ditolak" }
 export interface Job { id: string; title: string; division: string; open: boolean }
 export interface Applicant { id: string; jobId: string; name: string; email: string; stage: "Screening" | "Interview" | "Tes" | "Offering" | "Diterima" | "Ditolak" }
-export interface Payslip { id: string; employeeId: string; month: string; baseSalary: number; allowance: number; overtimePay: number; bpjs: number; latePenalty: number; otherDeduction: number; net: number; published: boolean }
+export interface Payslip { id: string; employeeId: string; week: string; baseSalary: number; allowance: number; overtimePay: number; bpjs: number; latePenalty: number; otherDeduction: number; net: number; published: boolean }
 export interface AppUser { id: string; username: string; password: string; role: Role; employeeId?: string | undefined }
 
 interface Data { employees: Employee[]; attendance: Attendance[]; kpis: Kpi[]; leaves: Leave[]; jobs: Job[]; applicants: Applicant[]; payslips: Payslip[]; users: AppUser[] }
