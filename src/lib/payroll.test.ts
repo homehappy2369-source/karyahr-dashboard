@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { calcPay } from "./payroll";
+import { calcPay, weekStart, weekEnd, shiftWeek } from "./payroll";
 
 describe("calcPay", () => {
   it("menghitung gaji bersih", () => {

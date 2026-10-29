@@ -76,7 +76,7 @@ function seed(): Data {
   return { employees, attendance, kpis, leaves, jobs, applicants, payslips: [], users };
 }
 
-const KEY = "hrd-data-v1";
+const KEY = "hrd-data-v2";
 const SESSION = "hrd-session-v1";
 
 interface Ctx extends Data {
