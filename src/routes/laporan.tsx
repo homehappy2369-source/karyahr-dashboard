@@ -32,14 +32,14 @@ function Reports() {
       Hadir: att.filter((a) => a.status === "Hadir").length, Terlambat: att.filter((a) => a.status === "Terlambat").length,
       "Izin/Alpha": att.filter((a) => a.status === "Izin" || a.status === "Alpha").length, "Jam Lembur": att.reduce((s, a) => s + a.overtimeHours, 0),
       "Skor KPI": kpis.find((k) => k.employeeId === e.id && k.month === month)?.score ?? 0,
-      "Gaji Bersih": payslips.find((p) => p.employeeId === e.id && p.month === month)?.net ?? 0,
+      "Gaji Bersih": payslips.filter((p) => p.employeeId === e.id && p.week.startsWith(month)).reduce((s, p) => s + p.net, 0),
     };
   });
   const cols = Object.keys(rows[0] ?? {}) as (keyof (typeof rows)[number])[];
 
   return (
     <>
-      <PageHeader title={`Laporan ${month}`} desc="Gaji bersih muncul setelah gaji bulan ini diproses."
+      <PageHeader title={`Laporan ${month}`} desc="Gaji bersih adalah total slip mingguan yang terbit dalam bulan ini."
         actions={<>
           <Input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="w-44" />
           <Button variant="outline" onClick={() => exportCSV(`laporan-hrd-${month}`, rows)}><FileDown className="h-4 w-4" />Excel</Button>

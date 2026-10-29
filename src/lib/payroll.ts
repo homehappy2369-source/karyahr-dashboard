@@ -22,3 +22,30 @@ export function calcPay(p: PayInput) {
 
 export const rupiah = (n: number) =>
   new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n);
+
+// Periode gaji mingguan: Senin–Sabtu. weekStart mengembalikan tanggal Senin (YYYY-MM-DD).
+export function weekStart(date: Date): string {
+  const d = new Date(date);
+  const day = d.getDay(); // 0=Minggu, 1=Senin, ...
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d.toISOString().slice(0, 10);
+}
+
+export function weekEnd(week: string): string {
+  const d = new Date(week + "T00:00:00");
+  d.setDate(d.getDate() + 5);
+  return d.toISOString().slice(0, 10);
+}
+
+export function weekLabel(week: string): string {
+  const fmt = (iso: string) =>
+    new Date(iso + "T00:00:00").toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+  return `${fmt(week)} – ${fmt(weekEnd(week))}`;
+}
+
+export function shiftWeek(week: string, delta: number): string {
+  const d = new Date(week + "T00:00:00");
+  d.setDate(d.getDate() + delta * 7);
+  return d.toISOString().slice(0, 10);
+}

@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Wallet, Users, CheckCircle2, Clock, Printer, FileDown, Send } from "lucide-react";
+import { Wallet, Users, CheckCircle2, Clock, Printer, FileDown, Send, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { useHR, can, newId, type Payslip } from "@/lib/hr-store";
-import { calcPay, rupiah } from "@/lib/payroll";
+import { calcPay, rupiah, weekStart, weekEnd, weekLabel, shiftWeek } from "@/lib/payroll";
 import { exportCSV } from "@/lib/export";
 import { PageHeader, Stat } from "@/components/AppShell";
 import { Card } from "@/components/ui/card";
@@ -16,10 +16,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Penggajian — HR Dashboard" },
-      { name: "description", content: "Hitung dan terbitkan gaji bulanan karyawan dengan cepat." },
-      { property: "og:title", content: "Penggajian — HR Dashboard" },
-      { property: "og:description", content: "Hitung dan terbitkan gaji bulanan karyawan dengan cepat." },
+      { title: "Penggajian Mingguan — HR Dashboard" },
+      { name: "description", content: "Hitung dan terbitkan gaji mingguan karyawan dengan cepat." },
+      { property: "og:title", content: "Penggajian Mingguan — HR Dashboard" },
+      { property: "og:description", content: "Hitung dan terbitkan gaji mingguan karyawan dengan cepat." },
     ],
   }),
   component: Payroll,
@@ -27,44 +27,53 @@ export const Route = createFileRoute("/")({
 
 function Payroll() {
   const { user, employees, attendance, payslips, update } = useHR();
-  const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [week, setWeek] = useState(weekStart(new Date()));
   const [other, setOther] = useState<Record<string, number>>({});
   const [slip, setSlip] = useState<Payslip | null>(null);
   const isStaff = can(user?.role, "payroll");
+  const end = weekEnd(week);
 
   const rows = useMemo(() => employees.map((e) => {
-    const att = attendance.filter((a) => a.employeeId === e.id && a.date.startsWith(month));
+    const att = attendance.filter((a) => a.employeeId === e.id && a.date >= week && a.date <= end);
     const overtimeHours = att.reduce((s, a) => s + a.overtimeHours, 0);
     const lateCount = att.filter((a) => a.status === "Terlambat").length;
-    const existing = payslips.find((p) => p.employeeId === e.id && p.month === month);
+    const existing = payslips.find((p) => p.employeeId === e.id && p.week === week);
     const otherDeduction = other[e.id] ?? existing?.otherDeduction ?? 0;
     const c = calcPay({ baseSalary: e.baseSalary, allowance: e.allowance, overtimeHours, lateCount, otherDeduction });
     return { e, overtimeHours, lateCount, otherDeduction, existing, ...c };
-  }), [employees, attendance, payslips, month, other]);
+  }), [employees, attendance, payslips, week, end, other]);
 
   const total = rows.reduce((s, r) => s + r.net, 0);
   const published = rows.filter((r) => r.existing?.published).length;
 
   const build = (r: (typeof rows)[number], publish: boolean): Payslip => ({
-    id: r.existing?.id ?? newId(), employeeId: r.e.id, month, baseSalary: r.e.baseSalary, allowance: r.e.allowance,
+    id: r.existing?.id ?? newId(), employeeId: r.e.id, week, baseSalary: r.e.baseSalary, allowance: r.e.allowance,
     overtimePay: r.overtimePay, bpjs: r.bpjs, latePenalty: r.latePenalty, otherDeduction: r.otherDeduction, net: r.net, published: publish,
   });
   const processAll = () => {
     const slips = rows.map((r) => build(r, true));
-    update("payslips", (prev) => [...prev.filter((p) => p.month !== month), ...slips]);
-    toast.success(`${slips.length} slip gaji ${month} diterbitkan`);
+    update("payslips", (prev) => [...prev.filter((p) => p.week !== week), ...slips]);
+    toast.success(`${slips.length} slip gaji minggu ${weekLabel(week)} diterbitkan`);
   };
 
+  const weekPicker = (
+    <div className="flex items-center gap-1">
+      <Button variant="outline" size="icon" onClick={() => setWeek(shiftWeek(week, -1))} aria-label="Minggu sebelumnya"><ChevronLeft className="h-4 w-4" /></Button>
+      <Input type="date" value={week} onChange={(e) => e.target.value && setWeek(weekStart(new Date(e.target.value + "T00:00:00")))} className="w-40" />
+      <Button variant="outline" size="icon" onClick={() => setWeek(shiftWeek(week, 1))} aria-label="Minggu berikutnya"><ChevronRight className="h-4 w-4" /></Button>
+    </div>
+  );
+
   if (!isStaff) {
-    const mine = payslips.filter((p) => p.employeeId === user?.employeeId && p.published).sort((a, b) => b.month.localeCompare(a.month));
+    const mine = payslips.filter((p) => p.employeeId === user?.employeeId && p.published).sort((a, b) => b.week.localeCompare(a.week));
     return (
       <>
-        <PageHeader title="Slip Gaji Saya" desc="Riwayat slip gaji yang sudah diterbitkan HRD." />
+        <PageHeader title="Slip Gaji Saya" desc="Riwayat slip gaji mingguan yang sudah diterbitkan HRD." />
         <Card className="divide-y">
           {mine.length === 0 && <p className="p-6 text-sm text-muted-foreground">Belum ada slip gaji yang diterbitkan.</p>}
           {mine.map((p) => (
             <div key={p.id} className="flex items-center justify-between p-4">
-              <div><p className="font-semibold">Periode {p.month}</p><p className="text-sm text-muted-foreground">{rupiah(p.net)}</p></div>
+              <div><p className="font-semibold">Minggu {weekLabel(p.week)}</p><p className="text-sm text-muted-foreground">{rupiah(p.net)}</p></div>
               <Button variant="outline" size="sm" onClick={() => setSlip(p)}>Lihat slip</Button>
             </div>
           ))}
@@ -76,10 +85,10 @@ function Payroll() {
 
   return (
     <>
-      <PageHeader title="Proses Gaji" desc="Lembur & keterlambatan diambil otomatis dari absensi bulan terpilih."
+      <PageHeader title={`Proses Gaji — Minggu ${weekLabel(week)}`} desc="Lembur & keterlambatan diambil otomatis dari absensi Senin–Sabtu minggu terpilih."
         actions={<>
-          <Input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="w-44" />
-          <Button variant="outline" onClick={() => exportCSV(`rekap-gaji-${month}`, rows.map((r) => ({ Nama: r.e.name, Divisi: r.e.division, "Gaji Pokok": r.e.baseSalary, Tunjangan: r.e.allowance, Lembur: r.overtimePay, BPJS: r.bpjs, "Potongan Telat": r.latePenalty, "Potongan Lain": r.otherDeduction, "Gaji Bersih": r.net })))}><FileDown className="h-4 w-4" />Excel</Button>
+          {weekPicker}
+          <Button variant="outline" onClick={() => exportCSV(`rekap-gaji-${week}`, rows.map((r) => ({ Nama: r.e.name, Divisi: r.e.division, "Gaji Pokok": r.e.baseSalary, Tunjangan: r.e.allowance, Lembur: r.overtimePay, BPJS: r.bpjs, "Potongan Telat": r.latePenalty, "Potongan Lain": r.otherDeduction, "Gaji Bersih": r.net })))}><FileDown className="h-4 w-4" />Excel</Button>
           <Button onClick={processAll}><Send className="h-4 w-4" />Proses & Terbitkan Semua</Button>
         </>} />
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -113,7 +122,7 @@ function Payroll() {
           </TableBody>
         </Table>
       </Card>
-      <p className="mt-3 text-xs text-muted-foreground">Rumus: lembur = pokok/173 × 1,5 × jam · BPJS karyawan 4% dari pokok · telat Rp25.000/kejadian. PPh 21 belum dihitung.</p>
+      <p className="mt-3 text-xs text-muted-foreground">Rumus per minggu: lembur = pokok/173 × 1,5 × jam · BPJS karyawan 4% dari pokok · telat Rp25.000/kejadian. PPh 21 belum dihitung.</p>
       <SlipDialog slip={slip} onClose={() => setSlip(null)} />
     </>
   );
@@ -129,7 +138,7 @@ function SlipDialog({ slip, onClose }: { slip: Payslip | null; onClose: () => vo
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-md">
-        <DialogHeader><DialogTitle>Slip Gaji — {slip.month}</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>Slip Gaji — Minggu {weekLabel(slip.week)}</DialogTitle></DialogHeader>
         <div className="rounded-lg bg-hero p-4 text-primary-foreground"><p className="font-bold">{e.name}</p><p className="text-sm opacity-90">{e.position} · {e.division}</p></div>
         <div>
           <p className="mt-2 text-xs font-semibold uppercase text-muted-foreground">Pendapatan</p>
