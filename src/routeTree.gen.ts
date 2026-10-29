@@ -12,9 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AbsensiRouteImport } from './routes/absensi'
 import { Route as CutiRouteImport } from './routes/cuti'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as KaryawanRouteImport } from './routes/karyawan'
 import { Route as KinerjaRouteImport } from './routes/kinerja'
 import { Route as LaporanRouteImport } from './routes/laporan'
+import { Route as PengaturanRouteImport } from './routes/pengaturan'
 import { Route as PenggunaRouteImport } from './routes/pengguna'
 import { Route as RekrutmenRouteImport } from './routes/rekrutmen'
 
@@ -33,6 +35,11 @@ const CutiRoute = CutiRouteImport.update({
   path: '/cuti',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const KaryawanRoute = KaryawanRouteImport.update({
   id: '/karyawan',
   path: '/karyawan',
@@ -46,6 +53,11 @@ const KinerjaRoute = KinerjaRouteImport.update({
 const LaporanRoute = LaporanRouteImport.update({
   id: '/laporan',
   path: '/laporan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PengaturanRoute = PengaturanRouteImport.update({
+  id: '/pengaturan',
+  path: '/pengaturan',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PenggunaRoute = PenggunaRouteImport.update({
@@ -63,9 +75,11 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/absensi': typeof AbsensiRoute
   '/cuti': typeof CutiRoute
+  '/dashboard': typeof DashboardRoute
   '/karyawan': typeof KaryawanRoute
   '/kinerja': typeof KinerjaRoute
   '/laporan': typeof LaporanRoute
+  '/pengaturan': typeof PengaturanRoute
   '/pengguna': typeof PenggunaRoute
   '/rekrutmen': typeof RekrutmenRoute
 }
@@ -73,9 +87,11 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/absensi': typeof AbsensiRoute
   '/cuti': typeof CutiRoute
+  '/dashboard': typeof DashboardRoute
   '/karyawan': typeof KaryawanRoute
   '/kinerja': typeof KinerjaRoute
   '/laporan': typeof LaporanRoute
+  '/pengaturan': typeof PengaturanRoute
   '/pengguna': typeof PenggunaRoute
   '/rekrutmen': typeof RekrutmenRoute
 }
@@ -84,9 +100,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/absensi': typeof AbsensiRoute
   '/cuti': typeof CutiRoute
+  '/dashboard': typeof DashboardRoute
   '/karyawan': typeof KaryawanRoute
   '/kinerja': typeof KinerjaRoute
   '/laporan': typeof LaporanRoute
+  '/pengaturan': typeof PengaturanRoute
   '/pengguna': typeof PenggunaRoute
   '/rekrutmen': typeof RekrutmenRoute
 }
@@ -96,9 +114,11 @@ export interface FileRouteTypes {
     | '/'
     | '/absensi'
     | '/cuti'
+    | '/dashboard'
     | '/karyawan'
     | '/kinerja'
     | '/laporan'
+    | '/pengaturan'
     | '/pengguna'
     | '/rekrutmen'
   fileRoutesByTo: FileRoutesByTo
@@ -106,9 +126,11 @@ export interface FileRouteTypes {
     | '/'
     | '/absensi'
     | '/cuti'
+    | '/dashboard'
     | '/karyawan'
     | '/kinerja'
     | '/laporan'
+    | '/pengaturan'
     | '/pengguna'
     | '/rekrutmen'
   id:
@@ -116,9 +138,11 @@ export interface FileRouteTypes {
     | '/'
     | '/absensi'
     | '/cuti'
+    | '/dashboard'
     | '/karyawan'
     | '/kinerja'
     | '/laporan'
+    | '/pengaturan'
     | '/pengguna'
     | '/rekrutmen'
   fileRoutesById: FileRoutesById
@@ -127,9 +151,11 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AbsensiRoute: typeof AbsensiRoute
   CutiRoute: typeof CutiRoute
+  DashboardRoute: typeof DashboardRoute
   KaryawanRoute: typeof KaryawanRoute
   KinerjaRoute: typeof KinerjaRoute
   LaporanRoute: typeof LaporanRoute
+  PengaturanRoute: typeof PengaturanRoute
   PenggunaRoute: typeof PenggunaRoute
   RekrutmenRoute: typeof RekrutmenRoute
 }
@@ -157,6 +183,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CutiRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/karyawan': {
       id: '/karyawan'
       path: '/karyawan'
@@ -176,6 +209,13 @@ declare module '@tanstack/react-router' {
       path: '/laporan'
       fullPath: '/laporan'
       preLoaderRoute: typeof LaporanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pengaturan': {
+      id: '/pengaturan'
+      path: '/pengaturan'
+      fullPath: '/pengaturan'
+      preLoaderRoute: typeof PengaturanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pengguna': {
@@ -199,9 +239,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AbsensiRoute: AbsensiRoute,
   CutiRoute: CutiRoute,
+  DashboardRoute: DashboardRoute,
   KaryawanRoute: KaryawanRoute,
   KinerjaRoute: KinerjaRoute,
   LaporanRoute: LaporanRoute,
+  PengaturanRoute: PengaturanRoute,
   PenggunaRoute: PenggunaRoute,
   RekrutmenRoute: RekrutmenRoute,
 }

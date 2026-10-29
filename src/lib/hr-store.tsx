@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { passwordChangeError, removeRecruitmentSamples } from "./hr-rules";
 
 export type Role = "admin" | "hrd" | "manajer" | "karyawan";
 export type ContractStatus = "Tetap" | "Kontrak" | "Probation" | "Magang";
@@ -24,7 +25,7 @@ const thisMonth = new Date().toISOString().slice(0, 7);
 
 function seed(): Data {
   const e = (id: string, name: string, position: string, division: string, status: ContractStatus, baseSalary: number, allowance: number): Employee => ({
-    id, name, email: name.split(" ")[0]!.toLowerCase() + "@perusahaan.co.id", phone: "0812" + Math.floor(10000000 + Math.random() * 89999999),
+    id, name, email: (name.split(" ")[0] ?? "").toLowerCase() + "@perusahaan.co.id", phone: "0812" + Math.floor(10000000 + Math.random() * 89999999),
     position, division, status, joinDate: "2023-0" + (1 + (id.charCodeAt(1) % 9)) + "-01", contractEnd: status === "Tetap" ? undefined : "2027-06-30",
     baseSalary, allowance, leaveQuota: 12,
   });
@@ -57,16 +58,8 @@ function seed(): Data {
     { id: uid(), employeeId: "e4", type: "Sakit", start: "2026-10-20", end: "2026-10-21", days: 2, reason: "Demam", status: "Disetujui" },
     { id: uid(), employeeId: "e6", type: "Izin", start: "2026-11-03", end: "2026-11-03", days: 1, reason: "Urusan bank", status: "Menunggu" },
   ];
-  const jobs: Job[] = [
-    { id: "j1", title: "Frontend Developer", division: "IT", open: true },
-    { id: "j2", title: "Staf Administrasi", division: "Operasional", open: true },
-  ];
-  const applicants: Applicant[] = [
-    { id: uid(), jobId: "j1", name: "Kevin Wijaya", email: "kevin@mail.com", stage: "Interview" },
-    { id: uid(), jobId: "j1", name: "Nadia Putri", email: "nadia@mail.com", stage: "Screening" },
-    { id: uid(), jobId: "j2", name: "Hendra Gunawan", email: "hendra@mail.com", stage: "Tes" },
-    { id: uid(), jobId: "j2", name: "Ayu Wulandari", email: "ayu@mail.com", stage: "Offering" },
-  ];
+  const jobs: Job[] = [];
+  const applicants: Applicant[] = [];
   const users: AppUser[] = [
     { id: "u1", username: "admin", password: "admin123", role: "admin" },
     { id: "u2", username: "hrd", password: "hrd123", role: "hrd", employeeId: "e2" },
@@ -86,6 +79,7 @@ interface Ctx extends Data {
   logout: () => void;
   update: <K extends keyof Data>(key: K, fn: (prev: Data[K]) => Data[K]) => void;
   reset: () => void;
+  changePassword: (current: string, next: string, confirm: string) => string | null;
 }
 const HRContext = createContext<Ctx | null>(null);
 
@@ -98,6 +92,11 @@ export function HRProvider({ children }: { children: ReactNode }) {
     try {
       const raw = localStorage.getItem(KEY);
       const d = raw ? (JSON.parse(raw) as Data) : seed();
+      if (!localStorage.getItem("hrd-recruitment-clean-v1")) {
+        Object.assign(d, removeRecruitmentSamples(d.jobs, d.applicants));
+        localStorage.setItem(KEY, JSON.stringify(d));
+        localStorage.setItem("hrd-recruitment-clean-v1", "1");
+      }
       setData(d);
       const s = localStorage.getItem(SESSION);
       if (s) setUser(d.users.find((u) => u.id === s) ?? null);
@@ -107,7 +106,7 @@ export function HRProvider({ children }: { children: ReactNode }) {
   useEffect(() => { if (ready) localStorage.setItem(KEY, JSON.stringify(data)); }, [data, ready]);
 
   const value: Ctx = {
-    ...data, ready, user,
+    ...data, ready, user: data.users.find((u) => u.id === user?.id) ?? null,
     login: (u, p) => {
       const f = data.users.find((x) => x.username === u && x.password === p);
       if (f) { setUser(f); localStorage.setItem(SESSION, f.id); }
@@ -116,6 +115,13 @@ export function HRProvider({ children }: { children: ReactNode }) {
     logout: () => { setUser(null); localStorage.removeItem(SESSION); },
     update: (key, fn) => setData((d) => ({ ...d, [key]: fn(d[key]) })),
     reset: () => setData(seed()),
+    changePassword: (current, next, confirm) => {
+      const account = data.users.find((u) => u.id === user?.id);
+      const error = passwordChangeError(account, current, next, confirm);
+      if (error || !account) return error ?? "Akun tidak ditemukan.";
+      setData((d) => ({ ...d, users: d.users.map((u) => u.id === account.id ? { ...u, password: next } : u) }));
+      return null;
+    },
   };
   return <HRContext.Provider value={value}>{children}</HRContext.Provider>;
 }
